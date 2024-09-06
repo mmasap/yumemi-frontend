@@ -7,6 +7,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: production
+    env:
+      VITE_RESAS_API_URL: ${{ vars.VITE_RESAS_API_URL }}
+      VITE_RESAS_API_KEY: ${{ secrets.VITE_RESAS_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
