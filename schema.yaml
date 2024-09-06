@@ -1,0 +1,111 @@
+openapi: "3.1.0"
+info:
+  version: 1.0.0
+  title: RESAS
+  license:
+    name: MIT
+servers:
+  - url: https://opendata.resas-portal.go.jp
+paths:
+  /api/v1/prefectures:
+    get:
+      operationId: getPrefectures
+      tags:
+        - common
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrefectureResponse"
+  /api/v1/population/composition/perYear:
+    get:
+      operationId: getPopulation
+      parameters:
+        - in: query
+          name: prefCode
+          required: true
+          schema:
+            type: number
+      tags:
+        - common
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PopulationResponse"
+components:
+  schemas:
+    PrefectureResponse:
+      type: object
+      required:
+        - messages
+        - result
+      properties:
+        messages:
+          type: string
+        result:
+          type: array
+          items:
+            type: object
+            required:
+              - prefCode
+              - prefName
+            properties:
+              prefCode:
+                type: integer
+              prefName:
+                type: string
+    PopulationResponse:
+      type: object
+      required:
+        - messages
+        - result
+      properties:
+        messages:
+          type: string
+        result:
+          type: object
+          required:
+            - boundaryYear
+            - data
+          properties:
+            boundaryYear:
+              type: integer
+            data:
+              type: array
+              items:
+                type: object
+                required:
+                  - label
+                  - data
+                properties:
+                  label:
+                    type: string
+                    enum:
+                      - 総人口
+                      - 年少人口
+                      - 生産年齢人口
+                      - 老年人口
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - year
+                        - value
+                      properties:
+                        year:
+                          type: integer
+                        value:
+                          type: integer
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
