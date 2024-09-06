@@ -30,7 +30,6 @@ export const Chart = (props: ChartProps) => {
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
   const [populationData, setPopulationData] = useState<PopulationData>({})
   const chartData = createChartData(props, displayChart, populationData)
-  console.log(chartData)
 
   useEffect(() => {
     const fetchTargets = props.prefectures.filter((p) => !populationData[p.prefCode])
