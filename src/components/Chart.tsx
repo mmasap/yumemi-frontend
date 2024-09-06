@@ -12,6 +12,8 @@ import {
   Label,
   ResponsiveContainer,
 } from 'recharts'
+import { Card } from '@/components/ui/card/card'
+import { Select } from '@/components/ui/form/select'
 
 type ChartProps = {
   prefectures: PrefectureResult[]
@@ -68,17 +70,12 @@ export const Chart = (props: ChartProps) => {
   }, [populationData, props.prefectures])
 
   return (
-    <>
-      <select
+    <Card>
+      <Select
         value={displayChart}
+        options={selectableCharts.map((charts) => ({ label: charts, value: charts }))}
         onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
-      >
-        {selectableCharts.map((chart) => (
-          <option key={chart} value={chart}>
-            {chart}
-          </option>
-        ))}
-      </select>
+      />
       <ResponsiveContainer width="100%" height={300} style={{ margin: '0 auto' }}>
         <LineChart
           data={chartData}
@@ -117,7 +114,7 @@ export const Chart = (props: ChartProps) => {
           ))}
         </LineChart>
       </ResponsiveContainer>
-    </>
+    </Card>
   )
 }
 

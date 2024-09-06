@@ -1,5 +1,6 @@
 import { useFetch } from '@/hooks/useFetch'
 import client, { PrefectureResult } from '@/lib/api'
+import { Checkbox } from '@/components/ui/form/checkbox'
 
 type SelectPrefecturesProps = {
   selectPrefectures: PrefectureResult[]
@@ -22,18 +23,15 @@ export const SelectPrefecture = (props: SelectPrefecturesProps) => {
         }}
       >
         {prefectures?.map((prefecture) => {
-          const id = prefecture.prefCode.toString()
           const checked = props.selectPrefectures.some((p) => p.prefCode === prefecture.prefCode)
           return (
-            <label key={id} htmlFor={id}>
-              <input
-                id={id}
-                type="checkbox"
-                checked={checked}
-                onChange={() => props.handleSelectPrefecture(prefecture)}
-              />
+            <Checkbox
+              key={prefecture.prefCode}
+              checked={checked}
+              onChange={() => props.handleSelectPrefecture(prefecture)}
+            >
               {prefecture.prefName}
-            </label>
+            </Checkbox>
           )
         })}
       </div>
