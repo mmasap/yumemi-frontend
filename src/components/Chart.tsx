@@ -1,4 +1,5 @@
 import client, { PopulationResult, PrefectureResult } from '@/lib/api'
+import { formatNumber } from '@/util/formatter'
 import { useEffect, useState } from 'react'
 
 import {
@@ -6,11 +7,10 @@ import {
   Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   Label,
-  // ResponsiveContainer,
+  ResponsiveContainer,
 } from 'recharts'
 
 type ChartProps = {
@@ -25,6 +25,19 @@ type ChartData = Array<{ year: number; [prefCode: number]: number }>
 
 type DisplayChart = PopulationResult['data'][number]['label']
 const selectableCharts: Array<DisplayChart> = ['総人口', '年少人口', '生産年齢人口', '老年人口']
+
+const colorPallette = [
+  '#f94144',
+  '#f3722c',
+  '#f8961e',
+  '#f9844a',
+  '#f9c74f',
+  '#90be6d',
+  '#43aa8b',
+  '#4d908e',
+  '#577590',
+  '#277da1',
+] as const
 
 export const Chart = (props: ChartProps) => {
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
@@ -66,36 +79,44 @@ export const Chart = (props: ChartProps) => {
           </option>
         ))}
       </select>
-      <LineChart
-        width={500}
-        height={300}
-        data={chartData}
-        margin={{
-          top: 30,
-          right: 60,
-          left: 20,
-          bottom: 5,
-        }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="year">
-          <Label value="年度" position="right" offset={25} />
-        </XAxis>
-        <YAxis>
-          <Label value="人口数" position="top" offset={10} />
-        </YAxis>
-        <Tooltip />
-        <Legend />
-        {props.prefectures.map((prefecture) => (
-          <Line
-            key={prefecture.prefCode}
-            type="monotone"
-            dataKey={prefecture.prefCode}
-            name={prefecture.prefName}
-            activeDot={{ r: 8 }}
+      <ResponsiveContainer width="100%" height={300} style={{ margin: '0 auto' }}>
+        <LineChart
+          data={chartData}
+          margin={{
+            top: 32,
+            left: 32,
+            right: 16,
+          }}
+        >
+          <XAxis dataKey="year">
+            <Label value="年度" position="insideBottomRight" offset={-10} />
+          </XAxis>
+          <YAxis tickFormatter={(value: number) => formatNumber(value)}>
+            <Label value="人口数" position="top" offset={16} />
+          </YAxis>
+          <Tooltip
+            formatter={(value: number) => formatNumber(value)}
+            itemSorter={(item) => {
+              delete item.payload.year
+              return Object.values(item.payload)
+                .sort((a, b) => Number(b) - Number(a))
+                .indexOf(item.value)
+            }}
           />
-        ))}
-      </LineChart>
+          <Legend />
+          {props.prefectures.map((prefecture, i) => (
+            <Line
+              key={prefecture.prefCode}
+              isAnimationActive={false}
+              type="monotone"
+              stroke={colorPallette[i % colorPallette.length]}
+              dataKey={prefecture.prefCode}
+              name={prefecture.prefName}
+              activeDot={{ r: 8 }}
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
     </>
   )
 }
