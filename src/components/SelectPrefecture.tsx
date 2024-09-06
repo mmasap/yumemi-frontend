@@ -23,9 +23,7 @@ export const SelectPrefecture = (props: SelectPrefecturesProps) => {
       >
         {prefectures?.map((prefecture) => {
           const id = prefecture.prefCode.toString()
-          const checked = props.selectPrefectures.some(
-            (p) => p.prefCode === prefecture.prefCode,
-          )
+          const checked = props.selectPrefectures.some((p) => p.prefCode === prefecture.prefCode)
           return (
             <label key={id} htmlFor={id}>
               <input

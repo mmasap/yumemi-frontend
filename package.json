@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "prettier": "prettier --write .",
+    "prettier": "prettier --write \"src/**/*.{js,ts,tsx}\"",
     "preview": "vite preview",
     "generate:api": "openapi-typescript ./schema.yaml -o ./src/lib/api/schema.ts"
   },
