@@ -1,17 +1,19 @@
 import client, { PopulationResult, PrefectureResult } from '@/lib/api'
-import { useEffect, useState } from 'react'
+import { formatNumber } from '@/util/formatter'
+import { useEffect, useId, useState } from 'react'
 
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   Label,
-  // ResponsiveContainer,
+  ResponsiveContainer,
 } from 'recharts'
+import { Card } from '@/components/ui/card/card'
+import { Select } from '@/components/ui/form/select'
 
 type ChartProps = {
   prefectures: PrefectureResult[]
@@ -26,10 +28,24 @@ type ChartData = Array<{ year: number; [prefCode: number]: number }>
 type DisplayChart = PopulationResult['data'][number]['label']
 const selectableCharts: Array<DisplayChart> = ['総人口', '年少人口', '生産年齢人口', '老年人口']
 
+const colorPallette = [
+  '#f94144',
+  '#f3722c',
+  '#f8961e',
+  '#f9844a',
+  '#f9c74f',
+  '#90be6d',
+  '#43aa8b',
+  '#4d908e',
+  '#577590',
+  '#277da1',
+] as const
+
 export const Chart = (props: ChartProps) => {
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
   const [populationData, setPopulationData] = useState<PopulationData>({})
   const chartData = createChartData(props, displayChart, populationData)
+  const selectId = useId()
 
   useEffect(() => {
     const fetchTargets = props.prefectures.filter((p) => !populationData[p.prefCode])
@@ -55,48 +71,72 @@ export const Chart = (props: ChartProps) => {
   }, [populationData, props.prefectures])
 
   return (
-    <>
-      <select
-        value={displayChart}
-        onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
-      >
-        {selectableCharts.map((chart) => (
-          <option key={chart} value={chart}>
-            {chart}
-          </option>
-        ))}
-      </select>
-      <LineChart
-        width={500}
+    <Card>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <label htmlFor={selectId}>表示データ</label>
+        <Select
+          style={{ marginLeft: '0.5rem' }}
+          id={selectId}
+          value={displayChart}
+          options={selectableCharts.map((charts) => ({ label: charts, value: charts }))}
+          onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
+        />
+      </div>
+      <ResponsiveContainer
+        width="100%"
         height={300}
-        data={chartData}
-        margin={{
-          top: 30,
-          right: 60,
-          left: 20,
-          bottom: 5,
+        style={{
+          marginTop: '0.5rem',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="year">
-          <Label value="年度" position="right" offset={25} />
-        </XAxis>
-        <YAxis>
-          <Label value="人口数" position="top" offset={10} />
-        </YAxis>
-        <Tooltip />
-        <Legend />
-        {props.prefectures.map((prefecture) => (
-          <Line
-            key={prefecture.prefCode}
-            type="monotone"
-            dataKey={prefecture.prefCode}
-            name={prefecture.prefName}
-            activeDot={{ r: 8 }}
-          />
-        ))}
-      </LineChart>
-    </>
+        {chartData.length === 0 ? (
+          <p>データなし</p>
+        ) : (
+          <LineChart
+            data={chartData}
+            margin={{
+              top: 32,
+              left: 32,
+              right: 16,
+            }}
+          >
+            <XAxis dataKey="year">
+              <Label value="年度" position="insideBottomRight" offset={-10} />
+            </XAxis>
+            <YAxis tickFormatter={(value: number) => formatNumber(value)}>
+              <Label value="人口数" position="top" offset={16} />
+            </YAxis>
+            <Tooltip
+              labelFormatter={(year) => `${year}年`}
+              formatter={(value: number) => formatNumber(value)}
+              itemSorter={(item) => {
+                delete item.payload.year
+                return Object.values(item.payload)
+                  .sort((a, b) => Number(b) - Number(a))
+                  .indexOf(item.value)
+              }}
+              itemStyle={{ padding: 0 }}
+              active={chartData.length > 0}
+            />
+            <Legend />
+            {props.prefectures.map((prefecture, i) => (
+              <Line
+                key={prefecture.prefCode}
+                isAnimationActive={false}
+                type="monotone"
+                stroke={colorPallette[i % colorPallette.length]}
+                dataKey={prefecture.prefCode}
+                name={prefecture.prefName}
+                activeDot={{ r: 8 }}
+              />
+            ))}
+          </LineChart>
+        )}
+      </ResponsiveContainer>
+    </Card>
   )
 }
 
