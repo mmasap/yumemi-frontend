@@ -15,11 +15,12 @@ export const SelectPrefecture = (props: SelectPrefecturesProps) => {
 
   return (
     <>
-      <p>都道府県</p>
+      <p style={{ fontWeight: 'bold' }}>都道府県</p>
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
+          marginBottom: '0.5rem',
         }}
       >
         {prefectures?.map((prefecture) => {
