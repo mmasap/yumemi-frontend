@@ -3,13 +3,13 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import 'sanitize.css'
 import './index.css'
+import env from './config/env.ts'
 
 async function enableMocking() {
-  if (process.env.NODE_ENV !== 'development') {
-    return
+  if (env.ENABLE_API_MOCKING) {
+    const { worker } = await import('./mocks/browser')
+    return worker.start()
   }
-  const { worker } = await import('./mocks/browser')
-  return worker.start()
 }
 
 enableMocking().then(() => {
