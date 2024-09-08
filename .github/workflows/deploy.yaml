@@ -24,7 +24,7 @@ jobs:
       - name: Install deps
         run: pnpm install
       - name: Build code
-        run: pnpm build
+        run: pnpm build:gh-pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

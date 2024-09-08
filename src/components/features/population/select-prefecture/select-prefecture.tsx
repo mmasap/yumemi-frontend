@@ -1,6 +1,7 @@
-import { useFetch } from '@/hooks/useFetch'
-import client, { PrefectureResult } from '@/lib/api'
+import { PrefectureResult } from '@/lib/api'
 import { Checkbox } from '@/components/ui/form/checkbox'
+import { usePrefectureContext } from '@/hooks/usePrefectureContext'
+import styles from './select-prefecture.module.css'
 
 type SelectPrefecturesProps = {
   selectPrefectures: PrefectureResult[]
@@ -8,21 +9,12 @@ type SelectPrefecturesProps = {
 }
 
 export const SelectPrefecture = (props: SelectPrefecturesProps) => {
-  const { data: prefectures } = useFetch(async () => {
-    const response = await client.GET('/api/v1/prefectures')
-    return response.data?.result ?? []
-  })
+  const prefectures = usePrefectureContext()
 
   return (
     <>
-      <p style={{ fontWeight: 'bold' }}>都道府県</p>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          marginBottom: '0.5rem',
-        }}
-      >
+      <p className={styles.title}>都道府県</p>
+      <div className={styles.prefectures}>
         {prefectures?.map((prefecture) => {
           const checked = props.selectPrefectures.some((p) => p.prefCode === prefecture.prefCode)
           return (

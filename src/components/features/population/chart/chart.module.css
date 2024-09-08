@@ -1,0 +1,23 @@
+.chart-header {
+  display: flex;
+  align-items: center;
+}
+
+.chart-header select {
+  margin-left: 0.5rem;
+}
+
+.chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.25rem;
+  width: 100% !important;
+  height: 360px !important;
+}
+
+@media only screen and (max-width: 768px) {
+  .chart-container {
+    height: 240px !important;
+  }
+}

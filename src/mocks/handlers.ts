@@ -1,9 +1,10 @@
-import { http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
 
 const API_URL = import.meta.env.VITE_RESAS_API_URL
 
 export const handlers = [
-  http.get(`${API_URL}/api/v1/prefectures`, () => {
+  http.get(`${API_URL}/api/v1/prefectures`, async () => {
+    await delay(1000)
     return HttpResponse.json({
       message: null,
       result: [
