@@ -47,6 +47,7 @@ export const Chart = (props: ChartProps) => {
   const [populationData, setPopulationData] = useState<PopulationData>({})
   const chartData = createChartData(props, displayChart, populationData)
   const selectId = useId()
+  const [innerWidth, setInnerWidth] = useState(window.innerWidth)
 
   useEffect(() => {
     const fetchTargets = props.prefectures.filter((p) => !populationData[p.prefCode])
@@ -71,6 +72,22 @@ export const Chart = (props: ChartProps) => {
     })
   }, [populationData, props.prefectures])
 
+  useEffect(() => {
+    let inProgress = false
+    function handleThrottleResize() {
+      if (inProgress) return
+      inProgress = true
+      setTimeout(() => {
+        setInnerWidth(window.innerWidth)
+        inProgress = false
+      }, 500)
+    }
+    window.addEventListener('resize', handleThrottleResize)
+    return () => {
+      window.removeEventListener('resize', handleThrottleResize)
+    }
+  }, [])
+
   return (
     <Card>
       <div className={styles['chart-header']}>
@@ -82,7 +99,7 @@ export const Chart = (props: ChartProps) => {
           onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
         />
       </div>
-      <ResponsiveContainer width="100%" height={300} className={styles.chart}>
+      <ResponsiveContainer width="100%" height={300} className={styles.chart} key={innerWidth}>
         {chartData.length === 0 ? (
           <p>データなし</p>
         ) : (
@@ -90,14 +107,14 @@ export const Chart = (props: ChartProps) => {
             data={chartData}
             margin={{
               top: 32,
-              left: 32,
+              left: 8,
               right: 16,
             }}
           >
             <XAxis dataKey="year">
               <Label value="年度" position="insideBottomRight" offset={-10} />
             </XAxis>
-            <YAxis tickFormatter={(value: number) => formatNumber(value)}>
+            <YAxis tickFormatter={(value: number) => `${formatNumber(value / 10000)}万`}>
               <Label value="人口数" position="top" offset={16} />
             </YAxis>
             <Tooltip
@@ -110,7 +127,6 @@ export const Chart = (props: ChartProps) => {
                   .indexOf(item.value)
               }}
               itemStyle={{ padding: 0 }}
-              active={chartData.length > 0}
             />
             <Legend />
             {props.prefectures.map((prefecture, i) => (
