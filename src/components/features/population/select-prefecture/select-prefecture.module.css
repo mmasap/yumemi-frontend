@@ -4,5 +4,11 @@
 
 .prefectures {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
+}
+
+@media only screen and (max-width: 768px) {
+  .prefectures {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }

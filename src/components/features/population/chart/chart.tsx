@@ -99,18 +99,11 @@ export const Chart = (props: ChartProps) => {
           onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
         />
       </div>
-      <ResponsiveContainer width="100%" height={300} className={styles.chart} key={innerWidth}>
+      <ResponsiveContainer className={styles['chart-container']} key={innerWidth}>
         {chartData.length === 0 ? (
           <p>データなし</p>
         ) : (
-          <LineChart
-            data={chartData}
-            margin={{
-              top: 32,
-              left: 8,
-              right: 16,
-            }}
-          >
+          <LineChart data={chartData} margin={{ top: 32, left: 8, right: 16 }}>
             <XAxis dataKey="year">
               <Label value="年度" position="insideBottomRight" offset={-10} />
             </XAxis>
