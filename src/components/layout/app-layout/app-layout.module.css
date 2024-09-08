@@ -1,0 +1,15 @@
+.app-layout {
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
+.app-layout header {
+  background-color: #1976d2;
+  color: #fff;
+  padding: 1rem;
+  font-size: 1.5rem;
+}
+
+.app-layout main {
+  padding: 0.5rem;
+}

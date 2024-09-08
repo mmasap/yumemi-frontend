@@ -1,0 +1,15 @@
+.chart-header {
+  display: flex;
+  align-items: center;
+}
+
+.chart-header select {
+  margin-left: 0.5rem;
+}
+
+.chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.5rem,
+}

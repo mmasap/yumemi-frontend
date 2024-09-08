@@ -1,6 +1,7 @@
 import client, { PopulationResult, PrefectureResult } from '@/lib/api'
 import { formatNumber } from '@/util/formatter'
 import { useEffect, useId, useState } from 'react'
+import styles from './chart.module.css'
 
 import {
   LineChart,
@@ -72,26 +73,16 @@ export const Chart = (props: ChartProps) => {
 
   return (
     <Card>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div className={styles['chart-header']}>
         <label htmlFor={selectId}>表示データ</label>
         <Select
-          style={{ marginLeft: '0.5rem' }}
           id={selectId}
           value={displayChart}
           options={selectableCharts.map((charts) => ({ label: charts, value: charts }))}
           onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
         />
       </div>
-      <ResponsiveContainer
-        width="100%"
-        height={300}
-        style={{
-          marginTop: '0.5rem',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <ResponsiveContainer width="100%" height={300} className={styles.chart}>
         {chartData.length === 0 ? (
           <p>データなし</p>
         ) : (
