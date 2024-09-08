@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:gh-pages": "tsc -b && vite build --base=/yumemi-frontend",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{js,ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{js,ts,tsx}\"",
