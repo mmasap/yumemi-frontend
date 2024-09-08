@@ -1,5 +1,5 @@
 import { ReactNode, Suspense } from 'react'
-import { PrefectureContextProvider } from '@/context/PrefectureContext'
+import { PrefectureContextProvider } from '@/context/prefecture'
 import ErrorBoundary from './error-boundary'
 import { AppLayout } from '@/components/layout'
 
