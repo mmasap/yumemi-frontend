@@ -1,6 +1,6 @@
 import client, { PopulationResult, PrefectureResult } from '@/lib/api'
 import { formatNumber } from '@/util/formatter'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import styles from './chart.module.css'
 
 import {
@@ -15,6 +15,7 @@ import {
 } from 'recharts'
 import { Card } from '@/components/ui/card/card'
 import { Select } from '@/components/ui/form/select'
+import { Spinner } from '@/components/ui/spinner'
 
 type ChartProps = {
   prefectures: PrefectureResult[]
@@ -44,52 +45,13 @@ const colorPallette = [
 
 export const Chart = (props: ChartProps) => {
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
-  const [populationData, setPopulationData] = useState<PopulationData>({})
+  const { populationData, isFetching } = usePopulationData(props.prefectures)
   const chartData = createChartData(props, displayChart, populationData)
   const selectId = useId()
-  const [innerWidth, setInnerWidth] = useState(window.innerWidth)
-
-  useEffect(() => {
-    const fetchTargets = props.prefectures.filter((p) => !populationData[p.prefCode])
-    if (fetchTargets.length <= 0) return
-
-    Promise.all(
-      fetchTargets.map((p) =>
-        client
-          .GET('/api/v1/population/composition/perYear', {
-            params: { query: { prefCode: p.prefCode } },
-          })
-          .then((res) => res.data?.result),
-      ),
-    ).then((res) => {
-      setPopulationData((prev) => {
-        const next = { ...prev }
-        res.forEach((data, index) => {
-          next[fetchTargets[index].prefCode] = data
-        })
-        return next
-      })
-    })
-  }, [populationData, props.prefectures])
-
-  useEffect(() => {
-    let inProgress = false
-    function handleThrottleResize() {
-      if (inProgress) return
-      inProgress = true
-      setTimeout(() => {
-        setInnerWidth(window.innerWidth)
-        inProgress = false
-      }, 500)
-    }
-    window.addEventListener('resize', handleThrottleResize)
-    return () => {
-      window.removeEventListener('resize', handleThrottleResize)
-    }
-  }, [])
+  const { chartContainerRef, chartContainerWidth } = useChartContainerWidth()
 
   return (
-    <Card>
+    <Card className={styles['chart-card']}>
       <div className={styles['chart-header']}>
         <label htmlFor={selectId}>表示データ</label>
         <Select
@@ -99,9 +61,13 @@ export const Chart = (props: ChartProps) => {
           onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
         />
       </div>
-      <ResponsiveContainer className={styles['chart-container']} key={innerWidth}>
+      <ResponsiveContainer
+        className={styles['chart-container']}
+        key={chartContainerWidth}
+        ref={chartContainerRef}
+      >
         {chartData.length === 0 ? (
-          <p>データなし</p>
+          <p style={{ visibility: isFetching ? 'hidden' : 'visible' }}>データなし</p>
         ) : (
           <LineChart data={chartData} margin={{ top: 32, left: 8, right: 16 }}>
             <XAxis dataKey="year">
@@ -136,8 +102,78 @@ export const Chart = (props: ChartProps) => {
           </LineChart>
         )}
       </ResponsiveContainer>
+      {isFetching && (
+        <div className={styles['chart-loading']}>
+          <Card>
+            <Spinner size="2rem" />
+          </Card>
+        </div>
+      )}
     </Card>
   )
+}
+
+const usePopulationData = (prefectures: PrefectureResult[]) => {
+  const [isFetching, setIsFetching] = useState(false)
+  const [populationData, setPopulationData] = useState<PopulationData>({})
+  useEffect(() => {
+    const fetchTargets = prefectures.filter((p) => !populationData[p.prefCode])
+    if (fetchTargets.length <= 0) return
+
+    setIsFetching(true)
+    Promise.all(
+      fetchTargets.map((p) =>
+        client
+          .GET('/api/v1/population/composition/perYear', {
+            params: { query: { prefCode: p.prefCode } },
+          })
+          .then((res) => res.data?.result),
+      ),
+    )
+      .then((res) => {
+        setPopulationData((prev) => {
+          const next = { ...prev }
+          res.forEach((data, index) => {
+            next[fetchTargets[index].prefCode] = data
+          })
+          return next
+        })
+      })
+      .finally(() => {
+        setIsFetching(false)
+      })
+  }, [populationData, prefectures])
+
+  return { populationData, isFetching }
+}
+
+const useChartContainerWidth = () => {
+  const chartContainerRef = useRef<HTMLDivElement>(null)
+  const [chartContainerWidth, setChartContainerWidth] = useState<number>()
+
+  useEffect(() => {
+    let inProgress = false
+    function handleThrottleResize() {
+      if (inProgress) return
+      inProgress = true
+      setTimeout(() => {
+        if (chartContainerRef.current) {
+          setChartContainerWidth(chartContainerRef.current.clientWidth)
+        }
+        inProgress = false
+      }, 500)
+    }
+
+    window.addEventListener('resize', handleThrottleResize)
+    return () => {
+      window.removeEventListener('resize', handleThrottleResize)
+    }
+  }, [])
+
+  return {
+    chartContainerRef,
+    chartContainerWidth,
+  }
 }
 
 function createChartData(

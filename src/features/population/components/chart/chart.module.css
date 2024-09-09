@@ -7,6 +7,18 @@
   margin-left: 0.5rem;
 }
 
+.chart-card {
+  position: relative;
+}
+
+.chart-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .chart-container {
   display: flex;
   justify-content: center;
@@ -16,7 +28,7 @@
   height: 360px !important;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 640px) {
   .chart-container {
     height: 240px !important;
   }
