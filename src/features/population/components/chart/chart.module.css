@@ -16,7 +16,7 @@
   height: 360px !important;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 640px) {
   .chart-container {
     height: 240px !important;
   }
