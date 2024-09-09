@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button'
+import { Dialog } from '@/components/ui/dialog'
 import { Component, ErrorInfo, ReactNode } from 'react'
 
 interface Props {
@@ -5,17 +7,17 @@ interface Props {
 }
 
 interface State {
-  hasError: boolean
+  error: Error | null
 }
 
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false,
+    error: null,
   }
 
-  public static getDerivedStateFromError(): State {
+  public static getDerivedStateFromError(error: Error): State {
     // Update state so the next render will show the fallback UI.
-    return { hasError: true }
+    return { error }
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -23,12 +25,23 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public render() {
-    if (this.state.hasError) {
-      return <h1>Sorry.. there was an error</h1>
+    if (this.state.error) {
+      return <ErrorDialog />
     }
 
     return this.props.children
   }
+}
+
+function ErrorDialog() {
+  return (
+    <Dialog
+      title="エラー"
+      action={<Button onClick={() => window.location.reload()}>再読み込み</Button>}
+    >
+      エラーが発生しました。再読み込みを行なってください。
+    </Dialog>
+  )
 }
 
 export default ErrorBoundary

@@ -15,7 +15,11 @@ function fetchPrefectures() {
     throw client
       .GET('/api/v1/prefectures')
       .then((res) => {
-        prefectureResult = res.data?.result ?? []
+        if (typeof res.data === 'object' && 'result' in res.data) {
+          prefectureResult = res.data.result
+          return
+        }
+        throw new Error('unexpected error')
       })
       .catch((e) => {
         prefectureResult = e
