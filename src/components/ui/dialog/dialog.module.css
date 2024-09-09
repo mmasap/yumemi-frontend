@@ -1,0 +1,19 @@
+.modal {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 640px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.action {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}

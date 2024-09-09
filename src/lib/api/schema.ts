@@ -61,8 +61,36 @@ export interface components {
         }[]
       }
     }
+    /** @enum {string} */
+    BadRequestResponse: '400'
+    ForbiddenResponse: {
+      /** @enum {string} */
+      statusCode: '403'
+      message: string
+      description: string
+    }
+    NotFoundResponse:
+      | '404'
+      | {
+          /** @enum {string} */
+          statusCode: '404'
+          message: string
+          description: string
+        }
   }
-  responses: never
+  responses: {
+    /** @description TooManyRequestsResponse */
+    TooManyRequestsResponse: {
+      headers: {
+        [name: string]: unknown
+      }
+      content: {
+        'application/json': {
+          message: string
+        }
+      }
+    }
+  }
   parameters: never
   requestBodies: never
   headers: never
@@ -79,14 +107,20 @@ export interface operations {
     }
     requestBody?: never
     responses: {
+      /** @description 指定された都道府県に関する都道府県データを取得する。 */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['PrefectureResponse']
+          'application/json':
+            | components['schemas']['PrefectureResponse']
+            | components['schemas']['BadRequestResponse']
+            | components['schemas']['ForbiddenResponse']
+            | components['schemas']['NotFoundResponse']
         }
       }
+      429: components['responses']['TooManyRequestsResponse']
     }
   }
   getPopulation: {
@@ -100,14 +134,20 @@ export interface operations {
     }
     requestBody?: never
     responses: {
+      /** @description 地域単位、年単位の年齢構成のデータを取得する。 */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['PopulationResponse']
+          'application/json':
+            | components['schemas']['PopulationResponse']
+            | components['schemas']['BadRequestResponse']
+            | components['schemas']['ForbiddenResponse']
+            | components['schemas']['NotFoundResponse']
         }
       }
+      429: components['responses']['TooManyRequestsResponse']
     }
   }
 }

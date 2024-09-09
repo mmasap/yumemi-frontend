@@ -1,6 +1,6 @@
 import client, { PopulationResult, PrefectureResult } from '@/lib/api'
 import { formatNumber } from '@/util/formatter'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import styles from './chart.module.css'
 
 import {
@@ -16,9 +16,12 @@ import {
 import { Card } from '@/components/ui/card/card'
 import { Select } from '@/components/ui/form/select'
 import { Spinner } from '@/components/ui/spinner'
+import { Dialog } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 type ChartProps = {
   prefectures: PrefectureResult[]
+  clearSelectPrefecture: (prefecture: PrefectureResult) => void
 }
 
 type PopulationData = {
@@ -45,106 +48,120 @@ const colorPallette = [
 
 export const Chart = (props: ChartProps) => {
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
-  const { populationData, isFetching } = usePopulationData(props.prefectures)
+  const { populationData, isFetching, error, clearError } = usePopulationData(props)
   const chartData = createChartData(props, displayChart, populationData)
   const selectId = useId()
   const { chartContainerRef, chartContainerWidth } = useChartContainerWidth()
 
   return (
-    <Card className={styles['chart-card']}>
-      <div className={styles['chart-header']}>
-        <label htmlFor={selectId}>表示データ</label>
-        <Select
-          id={selectId}
-          value={displayChart}
-          options={selectableCharts.map((charts) => ({ label: charts, value: charts }))}
-          onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
-        />
-      </div>
-      <ResponsiveContainer
-        className={styles['chart-container']}
-        key={chartContainerWidth}
-        ref={chartContainerRef}
-      >
-        {chartData.length === 0 ? (
-          <p style={{ visibility: isFetching ? 'hidden' : 'visible' }}>データなし</p>
-        ) : (
-          <LineChart data={chartData} margin={{ top: 32, left: 8, right: 16 }}>
-            <XAxis dataKey="year">
-              <Label value="年度" position="insideBottomRight" offset={-10} />
-            </XAxis>
-            <YAxis tickFormatter={(value: number) => `${formatNumber(value / 10000)}万`}>
-              <Label value="人口数" position="top" offset={16} />
-            </YAxis>
-            <Tooltip
-              labelFormatter={(year) => `${year}年`}
-              formatter={(value: number) => formatNumber(value)}
-              itemSorter={(item) => {
-                delete item.payload.year
-                return Object.values(item.payload)
-                  .sort((a, b) => Number(b) - Number(a))
-                  .indexOf(item.value)
-              }}
-              itemStyle={{ padding: 0 }}
-            />
-            <Legend />
-            {props.prefectures.map((prefecture, i) => (
-              <Line
-                key={prefecture.prefCode}
-                isAnimationActive={false}
-                type="monotone"
-                stroke={colorPallette[i % colorPallette.length]}
-                dataKey={prefecture.prefCode}
-                name={prefecture.prefName}
-                activeDot={{ r: 8 }}
-              />
-            ))}
-          </LineChart>
-        )}
-      </ResponsiveContainer>
-      {isFetching && (
-        <div className={styles['chart-loading']}>
-          <Card>
-            <Spinner size="2rem" />
-          </Card>
+    <>
+      <Card className={styles['chart-card']}>
+        <div className={styles['chart-header']}>
+          <label htmlFor={selectId}>表示データ</label>
+          <Select
+            id={selectId}
+            value={displayChart}
+            options={selectableCharts.map((charts) => ({ label: charts, value: charts }))}
+            onChange={(e) => setDisplayChart(e.target.value as DisplayChart)}
+          />
         </div>
+        <ResponsiveContainer
+          className={styles['chart-container']}
+          key={chartContainerWidth}
+          ref={chartContainerRef}
+        >
+          {chartData.length === 0 ? (
+            <p style={{ visibility: isFetching ? 'hidden' : 'visible' }}>データなし</p>
+          ) : (
+            <LineChart data={chartData} margin={{ top: 32, left: 8, right: 16 }}>
+              <XAxis dataKey="year">
+                <Label value="年度" position="insideBottomRight" offset={-10} />
+              </XAxis>
+              <YAxis tickFormatter={(value: number) => `${formatNumber(value / 10000)}万`}>
+                <Label value="人口数" position="top" offset={16} />
+              </YAxis>
+              <Tooltip
+                labelFormatter={(year) => `${year}年`}
+                formatter={(value: number) => formatNumber(value)}
+                itemSorter={(item) => {
+                  delete item.payload.year
+                  return Object.values(item.payload)
+                    .sort((a, b) => Number(b) - Number(a))
+                    .indexOf(item.value)
+                }}
+                itemStyle={{ padding: 0 }}
+              />
+              <Legend />
+              {props.prefectures.map((prefecture, i) => (
+                <Line
+                  key={prefecture.prefCode}
+                  isAnimationActive={false}
+                  type="monotone"
+                  stroke={colorPallette[i % colorPallette.length]}
+                  dataKey={prefecture.prefCode}
+                  name={prefecture.prefName}
+                  activeDot={{ r: 8 }}
+                />
+              ))}
+            </LineChart>
+          )}
+        </ResponsiveContainer>
+        {isFetching && (
+          <div className={styles['chart-loading']}>
+            <Card>
+              <Spinner size="2rem" />
+            </Card>
+          </div>
+        )}
+      </Card>
+      {error && (
+        <Dialog title="エラー" action={<Button onClick={clearError}>閉じる</Button>}>
+          データが取得できませんでした。
+        </Dialog>
       )}
-    </Card>
+    </>
   )
 }
 
-const usePopulationData = (prefectures: PrefectureResult[]) => {
+const usePopulationData = (props: ChartProps) => {
   const [isFetching, setIsFetching] = useState(false)
+  const [error, setError] = useState<Error>()
   const [populationData, setPopulationData] = useState<PopulationData>({})
+
   useEffect(() => {
-    const fetchTargets = prefectures.filter((p) => !populationData[p.prefCode])
-    if (fetchTargets.length <= 0) return
+    const fetchPrefectures = props.prefectures.filter((p) => !populationData[p.prefCode])
+    if (fetchPrefectures.length === 0) return
+    if (fetchPrefectures.length > 1) throw new Error('unexpected error')
+    const fetchPrefecture = fetchPrefectures[0]
 
     setIsFetching(true)
-    Promise.all(
-      fetchTargets.map((p) =>
-        client
-          .GET('/api/v1/population/composition/perYear', {
-            params: { query: { prefCode: p.prefCode } },
-          })
-          .then((res) => res.data?.result),
-      ),
-    )
+
+    client
+      .GET('/api/v1/population/composition/perYear', {
+        params: { query: { prefCode: fetchPrefecture.prefCode } },
+      })
       .then((res) => {
-        setPopulationData((prev) => {
-          const next = { ...prev }
-          res.forEach((data, index) => {
-            next[fetchTargets[index].prefCode] = data
-          })
-          return next
-        })
+        if (typeof res.data === 'object' && 'result' in res.data) {
+          const { result } = res.data
+          setPopulationData((prev) => ({ ...prev, [fetchPrefecture.prefCode]: result }))
+          return
+        }
+        throw new Error('unexpected error')
+      })
+      .catch((e) => {
+        props.clearSelectPrefecture(fetchPrefecture)
+        setError(e)
       })
       .finally(() => {
         setIsFetching(false)
       })
-  }, [populationData, prefectures])
+  }, [populationData, props])
 
-  return { populationData, isFetching }
+  const clearError = useCallback(() => {
+    setError(undefined)
+  }, [])
+
+  return { populationData, isFetching, error, clearError }
 }
 
 const useChartContainerWidth = () => {
