@@ -7,6 +7,18 @@
   margin-left: 0.5rem;
 }
 
+.chart-card {
+  position: relative;
+}
+
+.chart-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .chart-container {
   display: flex;
   justify-content: center;

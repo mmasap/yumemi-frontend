@@ -6,13 +6,18 @@ type SpinnerProps = Omit<ComponentProps<typeof CgSpinner>, 'color'> & {
   variant?: 'primary'
 }
 
-export const Spinner = ({ size = '1rem', variant = 'primary', ...props }: SpinnerProps) => {
+export const Spinner = ({
+  size = '1rem',
+  variant = 'primary',
+  className = '',
+  ...props
+}: SpinnerProps) => {
   const style = getComputedStyle(document.body)
 
   return (
     <CgSpinner
       color={style.getPropertyValue(`--color-${variant}`)}
-      className={styles.spinner}
+      className={[styles.spinner, className].join(' ').trim()}
       size={size}
       {...props}
     />

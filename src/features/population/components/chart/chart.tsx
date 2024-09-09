@@ -15,6 +15,7 @@ import {
 } from 'recharts'
 import { Card } from '@/components/ui/card/card'
 import { Select } from '@/components/ui/form/select'
+import { Spinner } from '@/components/ui/spinner'
 
 type ChartProps = {
   prefectures: PrefectureResult[]
@@ -44,13 +45,13 @@ const colorPallette = [
 
 export const Chart = (props: ChartProps) => {
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
-  const populationData = usePopulationData(props.prefectures)
+  const { populationData, isFetching } = usePopulationData(props.prefectures)
   const chartData = createChartData(props, displayChart, populationData)
   const selectId = useId()
   const { chartContainerRef, chartContainerWidth } = useChartContainerWidth()
 
   return (
-    <Card>
+    <Card className={styles['chart-card']}>
       <div className={styles['chart-header']}>
         <label htmlFor={selectId}>表示データ</label>
         <Select
@@ -66,7 +67,7 @@ export const Chart = (props: ChartProps) => {
         ref={chartContainerRef}
       >
         {chartData.length === 0 ? (
-          <p>データなし</p>
+          <p style={{ visibility: isFetching ? 'hidden' : 'visible' }}>データなし</p>
         ) : (
           <LineChart data={chartData} margin={{ top: 32, left: 8, right: 16 }}>
             <XAxis dataKey="year">
@@ -101,16 +102,25 @@ export const Chart = (props: ChartProps) => {
           </LineChart>
         )}
       </ResponsiveContainer>
+      {isFetching && (
+        <div className={styles['chart-loading']}>
+          <Card>
+            <Spinner size="2rem" />
+          </Card>
+        </div>
+      )}
     </Card>
   )
 }
 
 const usePopulationData = (prefectures: PrefectureResult[]) => {
+  const [isFetching, setIsFetching] = useState(false)
   const [populationData, setPopulationData] = useState<PopulationData>({})
   useEffect(() => {
     const fetchTargets = prefectures.filter((p) => !populationData[p.prefCode])
     if (fetchTargets.length <= 0) return
 
+    setIsFetching(true)
     Promise.all(
       fetchTargets.map((p) =>
         client
@@ -119,18 +129,22 @@ const usePopulationData = (prefectures: PrefectureResult[]) => {
           })
           .then((res) => res.data?.result),
       ),
-    ).then((res) => {
-      setPopulationData((prev) => {
-        const next = { ...prev }
-        res.forEach((data, index) => {
-          next[fetchTargets[index].prefCode] = data
+    )
+      .then((res) => {
+        setPopulationData((prev) => {
+          const next = { ...prev }
+          res.forEach((data, index) => {
+            next[fetchTargets[index].prefCode] = data
+          })
+          return next
         })
-        return next
       })
-    })
+      .finally(() => {
+        setIsFetching(false)
+      })
   }, [populationData, prefectures])
 
-  return populationData
+  return { populationData, isFetching }
 }
 
 const useChartContainerWidth = () => {
