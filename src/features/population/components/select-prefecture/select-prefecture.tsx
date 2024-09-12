@@ -13,8 +13,8 @@ export const SelectPrefecture = (props: SelectPrefecturesProps) => {
 
   return (
     <>
-      <p className={styles.title}>都道府県</p>
-      <div className={styles.prefectures}>
+      <h2 className={styles.title}>都道府県</h2>
+      <div className={styles.prefectures} data-testid="select-prefecture">
         {prefectures?.map((prefecture) => {
           const checked = props.selectPrefectures.some((p) => p.prefCode === prefecture.prefCode)
           return (

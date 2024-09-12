@@ -30,7 +30,7 @@ const Loading = () => {
 
   return (
     <Center>
-      <Spinner size="4rem" />
+      <Spinner size="4rem" aria-label="loading" />
     </Center>
   )
 }
