@@ -10,16 +10,17 @@ import prettier from 'eslint-config-prettier'
 export default tseslint.config(
   { ignores: ['dist', 'public'] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.recommended,
+      react.configs.flat.recommended,
+      react.configs.flat['jsx-runtime'],
+    ],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-  },
-  {
-    files: ['src/**/*.{js,mjs,cjs,jsx,mjsx,ts,tsx,mtsx}'],
-    extends: [react.configs.flat.recommended, react.configs.flat['jsx-runtime']],
     settings: {
       react: { version: 'detect' },
     },
