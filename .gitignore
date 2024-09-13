@@ -24,7 +24,11 @@ dist-ssr
 *.sw?
 
 .env
+
+# storybook
 *storybook.log
+
+# playwright
 /test-results/
 /playwright-report/
 /blob-report/
