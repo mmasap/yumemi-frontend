@@ -1,4 +1,4 @@
-import { ReactNode , createContext } from 'react'
+import { ReactNode, createContext } from 'react'
 import client, { PrefectureResult } from '@/lib/api'
 
 let prefectureResult: PrefectureResult[] | Error
