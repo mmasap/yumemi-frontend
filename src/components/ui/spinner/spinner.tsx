@@ -1,5 +1,5 @@
-import { CgSpinner } from 'react-icons/cg'
 import { ComponentProps } from 'react'
+import { CgSpinner } from 'react-icons/cg'
 import styles from './spinner.module.css'
 
 type SpinnerProps = Omit<ComponentProps<typeof CgSpinner>, 'color'> & {
