@@ -55,7 +55,7 @@ export const Chart = (props: ChartProps) => {
 
   return (
     <>
-      <Card className={styles['chart-card']}>
+      <Card className={styles['chart-card']} data-testid="chart-card">
         <div className={styles['chart-header']}>
           <label htmlFor={selectId}>表示データ</label>
           <Select

@@ -8,7 +8,9 @@ type AppLayoutProps = {
 export const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <div className={styles['app-layout']}>
-      <header>都道府県グラフ</header>
+      <header>
+        <h1>都道府県グラフ</h1>
+      </header>
       <main>{children}</main>
     </div>
   )

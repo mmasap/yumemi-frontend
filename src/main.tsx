@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { App } from './app'
 import 'sanitize.css'
 import './index.css'
-import env from './config/env.ts'
+import env from './config/env'
 
 async function enableMocking() {
   if (env.ENABLE_API_MOCKING) {

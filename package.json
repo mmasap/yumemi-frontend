@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "generate:api": "openapi-typescript ./schema.yaml -o ./src/lib/api/schema.ts",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test-e2e": "playwright test"
   },
   "dependencies": {
     "normalize.css": "^8.0.1",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^1.9.0",
     "@eslint/js": "^9.9.0",
+    "@playwright/test": "^1.47.0",
     "@storybook/addon-essentials": "^8.2.9",
     "@storybook/addon-interactions": "^8.2.9",
     "@storybook/addon-links": "^8.2.9",
@@ -39,7 +41,9 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
+    "dotenv": "^16.4.5",
     "eslint": "^9.9.0",
+    "eslint-plugin-playwright": "^1.6.2",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "eslint-plugin-storybook": "^0.8.0",
