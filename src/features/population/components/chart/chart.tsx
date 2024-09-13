@@ -9,6 +9,7 @@ import {
   Label,
   ResponsiveContainer,
 } from 'recharts'
+import { useSelectPrefectureDispatch, useSelectPrefectures } from '../../context'
 import styles from './chart.module.css'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card/card'
@@ -17,11 +18,6 @@ import { Select } from '@/components/ui/form/select'
 import { Spinner } from '@/components/ui/spinner'
 import client, { PopulationResult, PrefectureResult } from '@/lib/api'
 import { formatNumber } from '@/util/formatter'
-
-type ChartProps = {
-  prefectures: PrefectureResult[]
-  clearSelectPrefecture: (prefecture: PrefectureResult) => void
-}
 
 type PopulationData = {
   [prefCode: number]: PopulationResult | undefined
@@ -45,10 +41,11 @@ const colorPallette = [
   '#277da1',
 ] as const
 
-export const Chart = (props: ChartProps) => {
+export const Chart = () => {
+  const selectPrefectures = useSelectPrefectures()
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
-  const { populationData, isFetching, error, clearError } = usePopulationData(props)
-  const chartData = createChartData(props, displayChart, populationData)
+  const { populationData, isFetching, error, clearError } = usePopulationData()
+  const chartData = createChartData(selectPrefectures, displayChart, populationData)
   const selectId = useId()
   const { chartContainerRef, chartContainerWidth } = useChartContainerWidth()
 
@@ -91,7 +88,7 @@ export const Chart = (props: ChartProps) => {
                 itemStyle={{ padding: 0 }}
               />
               <Legend />
-              {props.prefectures.map((prefecture, i) => (
+              {selectPrefectures.map((prefecture, i) => (
                 <Line
                   key={prefecture.prefCode}
                   isAnimationActive={false}
@@ -122,13 +119,14 @@ export const Chart = (props: ChartProps) => {
   )
 }
 
-const usePopulationData = (props: ChartProps) => {
+const usePopulationData = () => {
+  const selectPrefectures = useSelectPrefectures()
+  const selectPrefectureDispatch = useSelectPrefectureDispatch()
   const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<Error>()
   const [populationData, setPopulationData] = useState<PopulationData>({})
-
   useEffect(() => {
-    const fetchPrefectures = props.prefectures.filter((p) => !populationData[p.prefCode])
+    const fetchPrefectures = selectPrefectures.filter((p) => !populationData[p.prefCode])
     if (fetchPrefectures.length === 0) return
     if (fetchPrefectures.length > 1) throw new Error('unexpected error')
     const fetchPrefecture = fetchPrefectures[0]
@@ -148,13 +146,13 @@ const usePopulationData = (props: ChartProps) => {
         throw new Error('unexpected error')
       })
       .catch((e) => {
-        props.clearSelectPrefecture(fetchPrefecture)
+        selectPrefectureDispatch({ type: 'unselect', payload: fetchPrefecture })
         setError(e)
       })
       .finally(() => {
         setIsFetching(false)
       })
-  }, [populationData, props])
+  }, [selectPrefectureDispatch, populationData, selectPrefectures])
 
   const clearError = useCallback(() => {
     setError(undefined)
@@ -193,13 +191,13 @@ const useChartContainerWidth = () => {
 }
 
 function createChartData(
-  props: ChartProps,
+  prefectures: PrefectureResult[],
   displayChart: DisplayChart,
   populationData: PopulationData,
 ): ChartData {
-  if (props.prefectures.length <= 0) return []
+  if (prefectures.length <= 0) return []
 
-  return props.prefectures
+  return prefectures
     .map((prefecture) => {
       const boundaryYear = populationData[prefecture.prefCode]?.boundaryYear ?? 2020
       const targetData = populationData[prefecture.prefCode]?.data.find(
