@@ -42,9 +42,8 @@ const colorPallette = [
 ] as const
 
 export const Chart = () => {
-  const selectPrefectures = useSelectPrefectures()
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
-  const { populationData, isFetching, error, clearError } = usePopulationData()
+  const { selectPrefectures, populationData, isFetching, error, clearError } = usePopulationData()
   const chartData = createChartData(selectPrefectures, displayChart, populationData)
   const selectId = useId()
   const { chartContainerRef, chartContainerWidth } = useChartContainerWidth()
@@ -158,7 +157,7 @@ const usePopulationData = () => {
     setError(undefined)
   }, [])
 
-  return { populationData, isFetching, error, clearError }
+  return { selectPrefectures, populationData, isFetching, error, clearError }
 }
 
 const useChartContainerWidth = () => {
