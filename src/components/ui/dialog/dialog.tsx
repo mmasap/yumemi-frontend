@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
-import styles from './dialog.module.css'
 import { Backdrop } from '../backdrop'
+import styles from './dialog.module.css'
 
 type DialogProps = {
   title: string

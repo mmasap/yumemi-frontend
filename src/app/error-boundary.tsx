@@ -1,6 +1,6 @@
+import { Component, ErrorInfo, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { Component, ErrorInfo, ReactNode } from 'react'
 
 interface Props {
   children?: ReactNode

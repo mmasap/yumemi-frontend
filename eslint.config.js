@@ -6,6 +6,7 @@ import react from 'eslint-plugin-react'
 import tseslint from 'typescript-eslint'
 import playwright from 'eslint-plugin-playwright'
 import prettier from 'eslint-config-prettier'
+import importX from 'eslint-plugin-import-x'
 
 export default tseslint.config(
   { ignores: ['dist', 'public'] },
@@ -25,12 +26,25 @@ export default tseslint.config(
       react: { version: 'detect' },
     },
     plugins: {
+      'import-x': importX,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+      'import-x/order': [
+        'error',
+        {
+          groups: ['external', 'builtin', 'internal', 'parent', 'sibling', 'index'],
+          alphabetize: {
+            order: 'asc',
+            caseInsensitive: true,
+          },
+        },
+      ],
+      'import-x/no-duplicates': 'error',
     },
   },
   {

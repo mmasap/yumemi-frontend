@@ -1,8 +1,4 @@
-import client, { PopulationResult, PrefectureResult } from '@/lib/api'
-import { formatNumber } from '@/util/formatter'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
-import styles from './chart.module.css'
-
 import {
   LineChart,
   Line,
@@ -13,11 +9,14 @@ import {
   Label,
   ResponsiveContainer,
 } from 'recharts'
+import styles from './chart.module.css'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card/card'
+import { Dialog } from '@/components/ui/dialog'
 import { Select } from '@/components/ui/form/select'
 import { Spinner } from '@/components/ui/spinner'
-import { Dialog } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import client, { PopulationResult, PrefectureResult } from '@/lib/api'
+import { formatNumber } from '@/util/formatter'
 
 type ChartProps = {
   prefectures: PrefectureResult[]

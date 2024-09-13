@@ -1,7 +1,7 @@
-import { PrefectureResult } from '@/lib/api'
+import styles from './select-prefecture.module.css'
 import { Checkbox } from '@/components/ui/form/checkbox'
 import { usePrefectureContext } from '@/context/prefecture'
-import styles from './select-prefecture.module.css'
+import { PrefectureResult } from '@/lib/api'
 
 type SelectPrefecturesProps = {
   selectPrefectures: PrefectureResult[]

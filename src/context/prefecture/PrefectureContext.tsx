@@ -1,6 +1,5 @@
-import { ReactNode } from 'react'
+import { ReactNode , createContext } from 'react'
 import client, { PrefectureResult } from '@/lib/api'
-import { createContext } from 'react'
 
 let prefectureResult: PrefectureResult[] | Error
 export const PrefectureContext = createContext<PrefectureResult[]>([])
