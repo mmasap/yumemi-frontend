@@ -25,29 +25,40 @@ test.describe('表示', () => {
     await page.goto('/')
     await expect(page.getByLabel('loading')).toBeVisible()
   })
-  test('ホーム画面', async ({ page }) => {
+  test('初期表示', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveTitle('都道府県グラフ')
     await expect(page.getByRole('heading', { name: '都道府県グラフ', level: 1 })).toBeVisible()
-    await expect(page.getByRole('heading', { name: '都道府県', level: 2 })).toBeVisible()
-    await expect(page.getByRole('checkbox')).toHaveCount(47)
 
+    // 都道府県選択
+    await expect(page.getByRole('heading', { name: '都道府県', level: 2 })).toBeVisible()
+    const checkboxes = page.getByRole('checkbox')
+    await expect(checkboxes).toHaveCount(47)
+    for (const checkbox of await checkboxes.all()) {
+      await expect(checkbox).not.toBeChecked()
+    }
+
+    // グラフカード
     const chartCard = page.getByTestId('chart-card')
     await expect(chartCard.getByLabel('表示データ')).toBeVisible()
 
     const select = chartCard.getByRole('combobox')
     await expect(select).toBeVisible()
+    await expect(select).toHaveValue('総人口')
 
     const selectOptions = select.locator('option')
     await expect(selectOptions.nth(0)).toHaveText('総人口')
     await expect(selectOptions.nth(1)).toHaveText('年少人口')
     await expect(selectOptions.nth(2)).toHaveText('生産年齢人口')
     await expect(selectOptions.nth(3)).toHaveText('老年人口')
+
+    await expect(chartCard.getByText('データなし')).toBeVisible()
   })
-  test('グラフ操作', async ({ page }) => {
+  test('都道府県選択', async ({ page }) => {
     await page.goto('/')
     const chartCard = page.getByTestId('chart-card')
     await expect(chartCard.getByText('データなし')).toBeVisible()
+    await expect(chartCard.locator('.recharts-line')).toHaveCount(0)
 
     const checkboxes = page.getByRole('checkbox')
     await checkboxes.nth(0).click()
@@ -58,6 +69,22 @@ test.describe('表示', () => {
     await expect(chartCard.locator('.recharts-line')).toHaveCount(1)
     await checkboxes.nth(1).click()
     await expect(chartCard.getByText('データなし')).toBeVisible()
+    await expect(chartCard.locator('.recharts-line')).toHaveCount(0)
+  })
+  test('表示グラフ変更', async ({ page }) => {
+    await page.goto('/')
+    const chartCard = page.getByTestId('chart-card')
+    const checkboxes = page.getByRole('checkbox')
+    await checkboxes.nth(0).click()
+    await chartCard.getByRole('combobox').selectOption('総人口')
+    let prevChart = await chartCard.locator('.recharts-line').innerHTML()
+
+    for (const value of ['年少人口', '生産年齢人口', '老年人口', '総人口']) {
+      await chartCard.getByRole('combobox').selectOption(value)
+      const nowChart = await chartCard.locator('.recharts-line').innerHTML()
+      await expect(prevChart).not.toEqual(nowChart)
+      prevChart = nowChart
+    }
   })
 })
 
