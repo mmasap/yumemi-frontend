@@ -1,12 +1,26 @@
-import { ReactNode, createContext } from 'react'
+import { ReactNode, createContext, useCallback, useState } from 'react'
 import client, { PrefectureResult } from '@/lib/api'
 
+type PrefectureContextValue = {
+  prefectures: PrefectureResult[]
+  getPrefecture: (prefectureCode: number) => PrefectureResult | undefined
+}
+
 let prefectureResult: PrefectureResult[] | Error
-export const PrefectureContext = createContext<PrefectureResult[]>([])
+export const PrefectureContext = createContext<PrefectureContextValue>({} as PrefectureContextValue)
 
 export const PrefectureContextProvider = ({ children }: { children: ReactNode }) => {
-  const prefectures = fetchPrefectures()
-  return <PrefectureContext.Provider value={prefectures}>{children}</PrefectureContext.Provider>
+  const [prefectures] = useState(fetchPrefectures)
+  const getPrefecture = useCallback(
+    (prefectureCode: number) => prefectures.find((p) => p.prefCode === prefectureCode),
+    [prefectures],
+  )
+
+  return (
+    <PrefectureContext.Provider value={{ prefectures, getPrefecture }}>
+      {children}
+    </PrefectureContext.Provider>
+  )
 }
 
 function fetchPrefectures() {
