@@ -9,15 +9,21 @@ import {
   Label,
   ResponsiveContainer,
 } from 'recharts'
-import { useSelectPrefectureDispatch, useSelectPrefectures } from '../../context'
 import styles from './chart.module.css'
+import { SelectPrefectureAction } from '@/app'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card/card'
 import { Dialog } from '@/components/ui/dialog'
 import { Select } from '@/components/ui/form/select'
 import { Spinner } from '@/components/ui/spinner'
-import client, { PopulationResult, PrefectureResult } from '@/lib/api'
+import { usePrefectureContext } from '@/context/prefecture'
+import client, { PopulationResult } from '@/lib/api'
 import { formatNumber } from '@/util/formatter'
+
+type ChartProps = {
+  selectPrefCodes: number[]
+  dispatchSelectPrefCode: (action: SelectPrefectureAction) => void
+}
 
 type PopulationData = {
   [prefCode: number]: PopulationResult | undefined
@@ -41,10 +47,12 @@ const colorPallette = [
   '#277da1',
 ] as const
 
-export const Chart = () => {
+export const Chart = (props: ChartProps) => {
+  const { selectPrefCodes } = props
+  const { getPrefecture } = usePrefectureContext()
   const [displayChart, setDisplayChart] = useState<DisplayChart>(selectableCharts[0])
-  const { selectPrefectures, populationData, isFetching, error, clearError } = usePopulationData()
-  const chartData = createChartData(selectPrefectures, displayChart, populationData)
+  const { populationData, isFetching, error, clearError } = usePopulationData(props)
+  const chartData = createChartData(selectPrefCodes, displayChart, populationData)
   const selectId = useId()
   const { chartContainerRef, chartContainerWidth } = useChartContainerWidth()
 
@@ -87,14 +95,14 @@ export const Chart = () => {
                 itemStyle={{ padding: 0 }}
               />
               <Legend />
-              {selectPrefectures.map((prefecture, i) => (
+              {props.selectPrefCodes.map((prefCode, i) => (
                 <Line
-                  key={prefecture.prefCode}
+                  key={prefCode}
                   isAnimationActive={false}
                   type="monotone"
                   stroke={colorPallette[i % colorPallette.length]}
-                  dataKey={prefecture.prefCode}
-                  name={prefecture.prefName}
+                  dataKey={prefCode}
+                  name={getPrefecture(prefCode)?.prefName}
                   activeDot={{ r: 8 }}
                 />
               ))}
@@ -118,14 +126,13 @@ export const Chart = () => {
   )
 }
 
-const usePopulationData = () => {
-  const selectPrefectures = useSelectPrefectures()
-  const selectPrefectureDispatch = useSelectPrefectureDispatch()
+const usePopulationData = ({ selectPrefCodes, dispatchSelectPrefCode }: ChartProps) => {
+  const [populationData, setPopulationData] = useState<PopulationData>({})
   const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<Error>()
-  const [populationData, setPopulationData] = useState<PopulationData>({})
+
   useEffect(() => {
-    const fetchPrefectures = selectPrefectures.filter((p) => !populationData[p.prefCode])
+    const fetchPrefectures = selectPrefCodes.filter((p) => !populationData[p])
     if (fetchPrefectures.length === 0) return
     if (fetchPrefectures.length > 1) throw new Error('unexpected error')
     const fetchPrefecture = fetchPrefectures[0]
@@ -134,30 +141,30 @@ const usePopulationData = () => {
 
     client
       .GET('/api/v1/population/composition/perYear', {
-        params: { query: { prefCode: fetchPrefecture.prefCode } },
+        params: { query: { prefCode: fetchPrefecture } },
       })
       .then((res) => {
         if (typeof res.data === 'object' && 'result' in res.data) {
           const { result } = res.data
-          setPopulationData((prev) => ({ ...prev, [fetchPrefecture.prefCode]: result }))
+          setPopulationData((prev) => ({ ...prev, [fetchPrefecture]: result }))
           return
         }
         throw new Error('unexpected error')
       })
       .catch((e) => {
-        selectPrefectureDispatch({ type: 'unselect', payload: fetchPrefecture })
+        dispatchSelectPrefCode({ type: 'unselect', payload: fetchPrefecture })
         setError(e)
       })
       .finally(() => {
         setIsFetching(false)
       })
-  }, [selectPrefectureDispatch, populationData, selectPrefectures])
+  }, [dispatchSelectPrefCode, populationData, selectPrefCodes])
 
   const clearError = useCallback(() => {
     setError(undefined)
   }, [])
 
-  return { selectPrefectures, populationData, isFetching, error, clearError }
+  return { populationData, isFetching, error, clearError }
 }
 
 const useChartContainerWidth = () => {
@@ -190,31 +197,28 @@ const useChartContainerWidth = () => {
 }
 
 function createChartData(
-  prefectures: PrefectureResult[],
+  selectPrefCodes: number[],
   displayChart: DisplayChart,
   populationData: PopulationData,
 ): ChartData {
-  if (prefectures.length <= 0) return []
+  if (selectPrefCodes.length <= 0) return []
 
-  return prefectures
-    .map((prefecture) => {
-      const boundaryYear = populationData[prefecture.prefCode]?.boundaryYear ?? 2020
-      const targetData = populationData[prefecture.prefCode]?.data.find(
-        (data) => data.label === displayChart,
-      )
+  return selectPrefCodes
+    .map((prefCode) => {
+      const boundaryYear = populationData[prefCode]?.boundaryYear ?? 2020
+      const targetData = populationData[prefCode]?.data.find((data) => data.label === displayChart)
       return targetData?.data
         .filter((data) => data.year <= boundaryYear)
         .map((data) => ({
-          prefCode: prefecture.prefCode,
           year: data.year,
-          [prefecture.prefCode]: data.value,
+          [prefCode]: data.value,
         }))
     })
     .flat()
     .reduce<ChartData>((acc, cur) => {
       if (!cur) return acc
       const index = acc.findIndex((data) => data.year === cur?.year)
-      const prefCode = cur.prefCode
+      const prefCode = Number(Object.keys(cur).find((key) => key !== 'year'))
       if (index >= 0) {
         acc[index] = { ...acc[index], [prefCode]: cur[prefCode] }
       } else {
