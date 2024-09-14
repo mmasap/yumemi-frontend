@@ -25,11 +25,11 @@
   align-items: center;
   margin-top: 0.25rem;
   width: 100% !important;
-  height: 360px !important;
+  height: 24rem !important;
 }
 
 @media only screen and (max-width: 768px) {
   .chart-container {
-    height: 240px !important;
+    height: 15rem !important;
   }
 }
